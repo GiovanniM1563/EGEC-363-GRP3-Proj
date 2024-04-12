@@ -1,5 +1,5 @@
 :root {
-	--dark: #fcfcfd;
+	--background: #3434c6;
 	--darker: #1F2937;
 	--darkest: #111827;
 	--grey: #6B7280;
@@ -11,7 +11,7 @@
 * {
 	margin: 0;
 	box-sizing: border-box;
-	font-family: "Fira sans", sans-serif;
+	font-family: Georgia, serif;
 }
 
 body {
@@ -19,7 +19,7 @@ body {
 	flex-direction: column;
 	min-height: 100vh;
 	color: #FFF;
-	background-color: var(--dark);
+	background-color: var(--background);
 }
 
 header {

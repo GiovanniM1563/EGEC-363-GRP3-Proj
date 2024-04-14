@@ -1,148 +1,83 @@
 import streamlit as st
-import ast
 import sqlite3
-import base64
 
-# Function to create a new database if it doesn't exist
-def create_new_database(db_name):
-    con = sqlite3.connect(db_name)
-    cur = con.cursor()
-    cur.execute('CREATE TABLE IF NOT EXISTS db(name TEXT, letters TEXT, note TEXT)')
-    con.commit()
-    return con
+# Back End
+con = sqlite3.connect("db.db")
+cur = con.cursor()
+cur.execute("CREATE TABLE IF NOT EXISTS tasks(title TEXT, desc TEXT, type TEXT)")
 
-# Create databases for each button
-db1_con = create_new_database('db1.db')
-db2_con = create_new_database('db2.db')
-db3_con = create_new_database('db3.db')
-db4_con = create_new_database('db4.db')  # New database
+# Function to add a new task
+def add_task(title, description, task_type):
+    try:
+        cur.execute('INSERT INTO tasks(title, desc, type) VALUES(?,?,?)', (title, description, task_type))
+        con.commit()
+        st.sidebar.success("Task added successfully")
+    except sqlite3.Error as e:
+        st.sidebar.error(f"Error adding task to database: {e}")
 
-# Function to add a new row to a specific database
-def add_new_row(con):
-    cur = con.cursor()
-    cur.execute('INSERT INTO db(name, letters, note) VALUES(?,?,?)', ('', '[]', ''))
-    con.commit()
+# Function to update an existing task
+def update_task(new_title, new_description, task_type, task_id):
+    try:
+        cur.execute('UPDATE tasks SET title=?, desc=?, type=? WHERE rowid=?', (new_title, new_description, task_type, task_id))
+        con.commit()
+        st.sidebar.success("Task updated successfully")
+        st.rerun()
+    except sqlite3.Error as e:
+        st.sidebar.error(f"Error updating task in database: {e}")
+    
 
-# Function to duplicate a row to the fourth database
-def duplicate_row_to_fourth_database(row, source_con, dest_con):
-    if dest_con is None:
-        st.warning("Destination database connection is not provided.")
-        return
-    cur_source = source_con.cursor()
-    cur_dest = dest_con.cursor()
-    cur_source.execute('SELECT name, letters, note FROM db WHERE rowid=?;', (row[0],))
-    data = cur_source.fetchone()
-    if data:
-        cur_dest.execute('INSERT INTO db(name, letters, note) VALUES(?,?,?)', data)
-        dest_con.commit()
+# Function to delete an existing task
+def delete_task(task_id):
+    try:
+        cur.execute('DELETE FROM tasks WHERE rowid=?', (task_id,))
+        con.commit()
+        st.sidebar.success("Task deleted successfully")
+        st.rerun()
+    except sqlite3.Error as e:
+        st.sidebar.error(f"Error deleting task from database: {e}")
 
+def done_task(task_id):
+    try:
+        cur.execute('UPDATE tasks SET type=? WHERE rowid=?', ('completed', task_id))
+        con.commit()
+        st.sidebar.success("Task updated successfully")
+        st.rerun()
+    except sqlite3.Error as e:
+        st.sidebar.error(f"Error updating task in database: {e}")
+# Front End
+#Add task
 
-
-def db_index_to_name(db_index):
-    if db_index == 1:
-        return 'Backlog'
-    elif db_index == 2:
-        return 'To Do'
-    elif db_index == 3:
-        return 'Doing'
-    elif db_index == 4:
-        return 'Done'
-    else:
-        return 'Unknown'
-
-
-
-
-
-
-# Function to generate human-readable text for database contents
-def generate_database_contents_text():
-
-    contents = ""
-    for i, db_con in enumerate([db1_con, db2_con, db3_con, db4_con], start=1):
-        db_name = db_index_to_name(i)
-        contents += f"{db_name}:\n"
-        cur = db_con.cursor()
-        for row in cur.execute('SELECT name, letters, note FROM db ORDER BY name'):
-            contents += f"  Task: {row[0]}\n"
-            contents += f"  Type: {', '.join(ast.literal_eval(row[1]))}\n"
-            contents += f"  Description: {row[2]}\n"
-            contents += "\n"
-
-    return contents
-
-# Function to download database contents as a text file
-def download_database_contents():
-    contents = generate_database_contents_text()
-
-    # Convert contents to bytes
-    contents = contents.encode('utf-8')
-    b64 = base64.b64encode(contents).decode()
-    href = f'<a href="data:file/txt;base64,{b64}" download="database_contents.txt">Download Database Contents</a>'
-    st.sidebar.markdown(href, unsafe_allow_html=True)
-
-# Function to display and manage forms for a specific database
-def display_forms(con, db_index, other_db_con):
-    cur = con.cursor()
-    for row in cur.execute('SELECT rowid, name, letters, note FROM db ORDER BY name'):
-        with st.expander(f'{row[1]} -  {db_index_to_name(db_index)}'):
-            with st.form(f'ID-{db_index}-{row[0]}'):
-                name = st.text_input('Task', row[1])
-                letters = st.multiselect('Type', ['QA', 'Bug Fix', 'Research','Client Request','Implementation','Rework'], ast.literal_eval(row[2]))
-                note = st.text_area('Description', row[3])
-                col1, col2 = st.columns([2, 1])
-                with col1:
-                    if st.form_submit_button(f'Save'):
-                        cur.execute(
-                            'UPDATE db SET name=?, letters=?, note=? WHERE rowid=?;', 
-                            (name, str(letters), note, row[0])
-                        )
-                        con.commit()
-                        st.experimental_rerun()
-                with col2:
-                    if st.form_submit_button(f"Delete"):
-                        cur.execute('DELETE FROM db WHERE rowid=?;', (row[0],))
-                        con.commit()
-                        st.experimental_rerun()
-                    if db_index != 4:  # Only show the button if not in Database 4
-                        if st.form_submit_button(f"Mark Done"):
-                            # Duplicate row to the fourth database
-                            duplicate_row_to_fourth_database(row, con, other_db_con)
-                            # Delete the row from the current database
-                            cur.execute('DELETE FROM db WHERE rowid=?;', (row[0],))
-                            con.commit()
-                            st.experimental_rerun()
-
-# Set the page layout to wide
 st.set_page_config(layout="wide")
+st.sidebar.header("Add New Task")
+title = st.sidebar.text_input("Title")
+description = st.sidebar.text_area("Description")
+options = ["todo", "inprogress", "completed", "dropped"]
+dropdown_value = st.sidebar.selectbox("Select an option", options)
 
-# Add a button to download database contents in the sidebar
-download_database_contents()
+submit_button_clicked = st.sidebar.button("Submit")
 
-# Layout for displaying databases in columns with wider columns
-col1, col2, col3, col4 = st.columns([1, 1, 1, 1])  # Adjusted layout with wider columns
+if submit_button_clicked:
+    add_task(title, description, dropdown_value)
 
-# Add buttons for each database
-with col1:
-    st.header('Backlog')
-    if st.button('Add to Backlog'):  # Adjusted button width
-        add_new_row(db1_con)
-    display_forms(db1_con, 1, db4_con)  # Pass db4 connection for duplication
+# Display the kanban board
+st.header("Kanban Board")
+cols = st.columns(4)
+for index, task_type in enumerate(options):
+    with cols[index]:
+        st.subheader(task_type.capitalize())
+        cur.execute("SELECT rowid, title, desc FROM tasks WHERE type=?", (task_type,))
+        tasks = cur.fetchall()
+        for task in tasks:
+            task_id = task[0]
+            with st.expander(f"{task[1]}"):
+                new_title = st.text_input(f"Title:", value=task[1], key=f"title_{task_id}")
+                new_description = st.text_area(f"Description:", value=task[2], key=f"description_{task_id}")
+                new_task_type = st.selectbox(f"Task Type:", options, index=options.index(task_type), key=f"type_{task_id}")
 
-with col2:
-    st.header('To Do')
-    if st.button('Add to To Do'):  # Adjusted button width
-        add_new_row(db2_con)
-    display_forms(db2_con, 2, db4_con)  # Pass db4 connection for duplication
+                update_button = st.button(f"Save", key=f"update_{task[0]}")
+                delete_button = st.button(f"Delete", key=f"delete_{task[0]}")
+                if update_button:
+                    update_task(new_title, new_description, new_task_type, task_id)       
+                if delete_button:
+                    delete_task(task_id)
 
-with col3:
-    st.header('Doing')
-    if st.button('Add to Doing'):  # Adjusted button width
-        add_new_row(db3_con)
-    display_forms(db3_con, 3, db4_con)  # Pass db4 connection for duplication
-
-with col4:
-    st.header('Done')  # New column for the fourth database
-    if st.button('Add to Done'):  # Adjusted button width
-        add_new_row(db4_con)
-    display_forms(db4_con, 4, None)  # No need to pass another database connection

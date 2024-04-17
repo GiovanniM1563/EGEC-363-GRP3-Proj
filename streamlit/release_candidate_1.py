@@ -240,23 +240,23 @@ col1, col2, col3, col4 = st.columns([1, 1, 1, 1])  # Adjusted layout with wider 
 with col1:
     st.header('Backlog')
     display_forms(db1_con, 1, db4_con)  # Pass db4 connection for duplication
-    if st.button('Add to Backlog'):  # Adjusted button width
+    if st.button('Add to Backlog'):  # 
         add_new_row(db1_con)
 
 with col2:
     st.header('To Do')
     display_forms(db2_con, 2, db4_con)  # Pass db4 connection for duplication
-    if st.button('Add to To Do'):  # Adjusted button width
+    if st.button('Add to To Do'):  
         add_new_row(db2_con)
 
 with col3:
     st.header('Doing')
     display_forms(db3_con, 3, db4_con)  # Pass db4 connection for duplication
-    if st.button('Add to Doing'):  # Adjusted button width
-        add_new_row(db3_con)
+    if st.button('Add to Doing'):
+        add_new_row(db3_con) 
 
 with col4:
     st.header('Done')  # New column for the fourth database
     display_forms(db4_con, 4, None)  # No need to pass another database connection
-    if st.button('Add to Done'):  # Adjusted button width
+    if st.button('Add to Done'):  
         add_new_row(db4_con)

@@ -13,10 +13,10 @@ def create_new_database(db_name):
     return con
 
 # Create databases for each button
-db1_con = create_new_database('db1.db')
-db2_con = create_new_database('db2.db')
-db3_con = create_new_database('db3.db')
-db4_con = create_new_database('db4.db')  # New database
+db1_con = create_new_database('db1.db') # Backlog
+db2_con = create_new_database('db2.db') # To Do
+db3_con = create_new_database('db3.db') # Doing
+db4_con = create_new_database('db4.db') # Done
 
 # Function to add a new row to a specific database
 def add_new_row(con):
@@ -25,7 +25,7 @@ def add_new_row(con):
     con.commit()
     st.experimental_rerun()  # Trigger rerun after adding a new row
 
-# Function to duplicate a row to the fourth database
+# Function to duplicate a row to the fourth database (AKA DONE)
 def duplicate_row_to_fourth_database(row, source_con, dest_con):
     if dest_con is None:
         st.warning("Destination database connection is not provided.")

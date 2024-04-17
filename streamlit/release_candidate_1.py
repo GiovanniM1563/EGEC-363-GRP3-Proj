@@ -37,8 +37,8 @@ def duplicate_row_to_fourth_database(row, source_con, dest_con):
     if data:
         cur_dest.execute('INSERT INTO db(name, letters, note, due_date) VALUES(?,?,?,?)', data)
         dest_con.commit()
-        cur_source.execute('DELETE FROM db WHERE rowid=?;', (row[0],))  # Delete the row from the source database
-        source_con.commit()
+        cur_source.execute('DELETE FROM db WHERE rowid=?;', (row[0],))  # Delete the row from the source database after duplication
+        source_con.commit()   
         st.experimental_rerun()  # Trigger rerun after duplicating and deleting the row
 
 # Function to convert database index to name

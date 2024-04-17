@@ -236,7 +236,7 @@ download_database_contents()
 # Layout for displaying databases in columns with wider columns
 col1, col2, col3, col4 = st.columns([1, 1, 1, 1])  # Adjusted layout with wider columns
 
-# Display forms and "Add to" buttons for each database
+# Display forms and "Add to" buttons for each database, each col represents a column IE Column One being the location where all of the Backlog items are displayed and so on    
 with col1:
     st.header('Backlog')
     display_forms(db1_con, 1, db4_con)  # Pass db4 connection for duplication

@@ -6,6 +6,7 @@ import datetime
 
 # Function to create a new database if it doesn't exist
 import sqlite3
+st.set_page_config(layout="wide", page_title="Kanban Board",initial_sidebar_state="collapsed")
 
 def create_new_database(db_name):
     """
@@ -118,20 +119,19 @@ def generate_database_contents_text():
             contents += "\n"
     return contents
 
-# Function to download database contents as a text file
-def download_database_contents():
+# Function to display database contents in a pop-up window within the sidebar
+def display_database_contents():
     """
-    Downloads the contents of the database as a text file.
+    Displays the contents of the database in a pop-up window within the sidebar as markdown.
 
     Returns:
         None
     """
     contents = generate_database_contents_text()
-    # Convert contents to bytes
-    contents = contents.encode('utf-8')
-    b64 = base64.b64encode(contents).decode()
-    href = f'<a href="data:file/txt;base64,{b64}" download="database_contents.txt">Download Database Contents</a>'
-    st.sidebar.markdown(href, unsafe_allow_html=True)
+    st.sidebar.text_area("Kanban List", contents, height=400)
+
+
+
 
 # Function to display and manage forms for a specific database
 def display_forms(con, db_index, other_db_con):
@@ -162,7 +162,7 @@ def display_forms(con, db_index, other_db_con):
                 due_date = None
                 if row[4]:
                     try:
-                        due_date = datetime.datetime.strptime(row[4], '%Y-%m-%d')
+                        due_date = datetime.datetime.strptime(row[4], '%m-%d-%Y')
                     except ValueError:
                         st.warning("Invalid due date format in database.")
                 due_date = st.date_input('Due Date', due_date,format="MM/DD/YYYY")
@@ -172,7 +172,7 @@ def display_forms(con, db_index, other_db_con):
                     if st.form_submit_button(f'Save'):
                         cur.execute(
                             'UPDATE db SET name=?, letters=?, note=?, due_date=? WHERE rowid=?;', 
-                            (name, str(letters), note, due_date.strftime('%Y-%m-%d') if due_date else None, row[0])
+                            (name, str(letters), note, due_date.strftime('%m-%d-%Y') if due_date else None, row[0])
                         )
                         con.commit()
                         st.experimental_rerun()  # Trigger rerun after saving changes
@@ -212,7 +212,7 @@ def days_until_date(date_str):
         return None  # Return None if the date string is empty
 
     try:
-        date_obj = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
+        date_obj = datetime.datetime.strptime(date_str, '%m-%d-%Y').date()
         today = datetime.datetime.today().date()
         delta = (date_obj - today).days
         if delta == 0:
@@ -228,10 +228,10 @@ def days_until_date(date_str):
         return None  # Return None if the date format is incorrect
 
         
-st.set_page_config(layout="wide")
 
+
+display_database_contents()
 # Add a button to download database contents in the sidebar
-download_database_contents()
 
 # Layout for displaying databases in columns with wider columns
 col1, col2, col3, col4 = st.columns([1, 1, 1, 1])  # Adjusted layout with wider columns

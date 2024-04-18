@@ -2,6 +2,16 @@ import streamlit as st
 from openai import OpenAI
 
 def kanbot(contents):
+    """
+    A chatbot function that interacts with the user and provides responses using the OpenAI GPT-3 model.
+
+    Parameters:
+    - contents (list): The current task list.
+
+    Returns:
+    None
+    """
+
     openai_api_key = st.secrets["api_key"]
     if "messages" not in st.session_state:
         st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
@@ -35,3 +45,4 @@ def kanbot(contents):
 
             # Display the assistant's response in a text area
             st.text_area(f"**Assistant**", msg, disabled=False)
+

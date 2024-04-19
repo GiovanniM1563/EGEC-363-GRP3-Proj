@@ -9,7 +9,9 @@ Please Keep in mind that database is visible to all users, contents not seperate
 
 ## Important Links 
  [Kanban Board Presentation](https://docs.google.com/presentation/d/15SwJrqFD1fFdjdOV2dm3QoGbZWFXdliPpo8KeF4PlKY/edit#slide=id.p)
+ 
  [Video Demo on Youtube](https://youtu.be/IQKjDdmUzJQ)
+
  [Complete Kanban Documentation](https://docs.google.com/document/d/18iklARlkvR9vMtxO9Rls-8i2jDQxDcdOEl9joiiH3Y0/edit?usp=sharing)
 
 ## Project Goals
